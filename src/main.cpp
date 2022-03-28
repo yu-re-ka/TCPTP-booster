@@ -33,8 +33,19 @@ void forward(const int fd_x,const int fd_y) {//fd_x->fd_y
 	const int buf_sz = 2048;
 	char buf[buf_sz];
 	ssize_t sz;
-	while ((sz = recv(fd_x,buf,buf_sz,0)) > 0) {
-		if (send(fd_y,buf,sz,0) < 0) break;
+	while (true) {
+		sz = recv(fd_x,buf,buf_sz,0);
+		if (sz > 0) {
+			if (send(fd_y,buf,sz,0) < 0) break;
+		} else if (sz == -1) { // Bad file descriptor
+			break;
+		} else if (sz < 0) {
+			printf("[ERROR] recv return %ld:",sz);
+			perror("");
+			printf("\n");
+		} else {
+			break;
+		}
 	}
 	close(fd_x);
 	close(fd_y);
